@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+gradio_client
+huggingface_hub
+pillow
+python-multipart
