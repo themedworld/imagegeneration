@@ -1,17 +1,17 @@
-# app.py
-
 import os
 import uuid
+import base64
+from io import BytesIO
+
 from fastapi import FastAPI, HTTPException
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from gradio_client import Client
 from huggingface_hub import InferenceClient
+from dotenv import load_dotenv
 
 # =========================
 # LOAD ENV
 # =========================
-from dotenv import load_dotenv
 load_dotenv()
 
 HF_TOKEN = os.getenv("HF_TOKEN")
@@ -31,9 +31,6 @@ IMAGE_MODEL = "black-forest-labs/FLUX.1-schnell"
 # =========================
 
 app = FastAPI(title="Prompt To Image API")
-
-os.makedirs("generated", exist_ok=True)
-app.mount("/generated", StaticFiles(directory="generated"), name="generated")
 
 # =========================
 # CLIENTS
@@ -55,14 +52,13 @@ class ImageRequest(BaseModel):
     mode: str   # simple / enriched
 
 # =========================
-# HELPERS
+# BASE64 HELPER
 # =========================
 
-def save_image(image):
-    filename = f"{uuid.uuid4()}.png"
-    path = f"generated/{filename}"
-    image.save(path)
-    return path
+def image_to_base64(image):
+    buffer = BytesIO()
+    image.save(buffer, format="PNG")
+    return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 # =========================
 # API
@@ -71,10 +67,13 @@ def save_image(image):
 @app.post("/generate-image")
 def generate_image(data: ImageRequest):
 
-    final_prompt = data.prompt
-    enriched_prompt = None
-
     try:
+        final_prompt = data.prompt
+        enriched_prompt = None
+
+        # =====================
+        # ENRICH PROMPT
+        # =====================
         if data.mode.lower() == "enriched":
 
             enriched_prompt = prompt_client.predict(
@@ -84,12 +83,18 @@ def generate_image(data: ImageRequest):
 
             final_prompt = enriched_prompt
 
+        # =====================
+        # GENERATE IMAGE
+        # =====================
         image = image_client.text_to_image(
             final_prompt,
             model=IMAGE_MODEL
         )
 
-        path = save_image(image)
+        # =====================
+        # CONVERT IMAGE TO BASE64
+        # =====================
+        image_base64 = image_to_base64(image)
 
         return {
             "success": True,
@@ -97,7 +102,7 @@ def generate_image(data: ImageRequest):
             "original_prompt": data.prompt,
             "used_prompt": final_prompt,
             "enriched_prompt": enriched_prompt,
-            "image_url": f"http://127.0.0.1:8000/{path}"
+            "image_base64": image_base64
         }
 
     except Exception as e:
