@@ -85,7 +85,7 @@ def generate_image(data: ImageRequest):
         if data.mode.lower() == "enriched":
 
             enriched_prompt = prompt_client.predict(
-                prompt=data.prompt,
+                data.prompt, 
                 api_name="/predict_prompt"
             )
 
