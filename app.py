@@ -31,6 +31,13 @@ IMAGE_MODEL = "black-forest-labs/FLUX.1-schnell"
 # =========================
 
 app = FastAPI(title="Prompt To Image API")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # =========================
 # CLIENTS
