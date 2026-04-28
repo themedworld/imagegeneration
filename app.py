@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from gradio_client import Client
 from huggingface_hub import InferenceClient
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
 # =========================
 # LOAD ENV
