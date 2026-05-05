@@ -52,7 +52,6 @@ app.add_middleware(
 prompt_client = Client(SPACE_NAME)
 
 image_client = InferenceClient(
-    provider="nscale",
     api_key=HF_TOKEN
 )
 
