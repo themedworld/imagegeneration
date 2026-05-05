@@ -31,7 +31,7 @@ if not HF_TOKEN:
 # CONFIG
 # =========================
 SPACE_NAME = "amin1221/enrechirprompt"
-IMAGE_MODEL = "runwayml/black-forest-labs/FLUX.1-schnell"
+IMAGE_MODEL = "black-forest-labs/FLUX.1-schnell"
 
 # =========================
 # APP
